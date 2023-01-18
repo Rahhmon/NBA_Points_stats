@@ -280,111 +280,150 @@ app.layout = dbc.Container(children=[
     dash.dependencies.Input('cl_adversary', 'value')])
 
 def display_graphs(team_a, team_b, pitch_a, pitch_b, pts_quarter, pts_time, pts_game, pts_game_sum, n_clicks, population, cl_adversary):
+    pop_a = 0
+    pop_b = 0
     if(pitch_a != 'Both'):
         if(pitch_a == 'Home'):
             dff_a = df[df['team'] == team_a]
-            dff_a = dff_a[dff_a['home_away'] == 'home'].tail(population)
+            pop_a = len(dff_a[dff_a['home_away'] == 'home'].tail(population))
+            dff_a = dff_a[dff_a['home_away'] == 'home'].tail(pop_a)
         else:
             dff_a = df[df['team'] == team_a]
-            dff_a = dff_a[dff_a['home_away'] == 'away'].tail(population)
+            pop_a = len(dff_a[dff_a['home_away'] == 'away'].tail(population))
+            dff_a = dff_a[dff_a['home_away'] == 'away'].tail(pop_a)
     else:
-        dff_a = df[df['team'] == team_a].tail(population)
+        pop_a = len(df[df['team'] == team_a].tail(population))
+        dff_a = df[df['team'] == team_a].tail(pop_a)
 
     if (pitch_b != 'Both'):
         if (pitch_b == 'Home'):
             dff_b = df[df['team'] == team_b]
-            dff_b = dff_b[dff_b['home_away'] == 'home'].tail(population)
+            pop_b = len(dff_b[dff_b['home_away'] == 'home'].tail(population))
+            dff_b = dff_b[dff_b['home_away'] == 'home'].tail(pop_b)
         else:
             dff_b = df[df['team'] == team_b]
-            dff_b = dff_b[dff_b['home_away'] == 'away'].tail(population)
+            pop_b = len(dff_b[dff_b['home_away'] == 'away'].tail(population))
+            dff_b = dff_b[dff_b['home_away'] == 'away'].tail(pop_b)
     else:
-        dff_b = df[df['team'] == team_b].tail(population)
+        pop_b = len(df[df['team'] == team_b].tail(population))
+        dff_b = df[df['team'] == team_b].tail(pop_b)
+
+    freq_score_1q_A = len(dff_a[dff_a["pts_1q"] > pts_quarter]) / len(dff_a["pts_1q"])
+    freq_got_scored_1q_A = len(dff_a[dff_a["pts_adv_1q"] > pts_quarter]) / len(dff_a["pts_adv_1q"])
+    freq_score_1q_B = len(dff_b[dff_b["pts_1q"] > pts_quarter]) / len(dff_b["pts_1q"])
+    freq_got_scored_1q_B = len(dff_b[dff_b["pts_adv_1q"] > pts_quarter]) / len(dff_b["pts_adv_1q"])
+    freq_score_1t_A = len(dff_a[dff_a["pts_1t"] > pts_time]) / len(dff_a["pts_1t"])
+    freq_score_1t_B = len(dff_b[dff_b["pts_1t"] > pts_time]) / len(dff_b["pts_1t"])
+    freq_got_scored_1t_A = len(dff_a[dff_a["pts_adv_1t"] > pts_time]) / len(dff_a["pts_adv_1t"])
+    freq_got_scored_1t_B = len(dff_b[dff_b["pts_adv_1t"] > pts_time]) / len(dff_b["pts_1t"])
+    freq_score_ft_A = len(dff_a[dff_a["pts_total"] > pts_game]) / len(dff_a["pts_total"])
+    freq_score_ft_B = len(dff_b[dff_b["pts_total"] > pts_game]) / len(dff_b["pts_total"])
+    freq_got_scored_ft_A = len(dff_a[dff_a["pts_adv_total"] > pts_game]) / len(dff_a["pts_adv_total"])
+    freq_got_scored_ft_B = len(dff_b[dff_b["pts_adv_total"] > pts_game]) / len(dff_b["pts_adv_total"])
 
 
-    #Graphs of points per quarter of team A
-    first_quarter_team_A = px.scatter(dff_a, x="date", y="pts_1q", title=f'Pontos de {team_a} no primeiro quarto')
-    first_quarter_team_A.add_trace(go.Line(x=dff_a['date'], y=(len(dff_a['pts_1q']) * [pts_quarter]), name=f'{pts_quarter}'))
-    first_quarter_team_A.update_layout(template=graph_theme,title_x=0.5,font=font_theme)
-    first_quarter_resume_A = f'{team_a} scored {pts_quarter} points \
-            {len(dff_a[dff_a["pts_1q"] > pts_quarter]) / len(dff_a["pts_1q"]) * 100:.2f}% of times in the last {population} matches\n' \
-                           f'{team_a} got scored by {pts_quarter} points \
-            {len(dff_a[dff_a["pts_adv_1q"] > pts_quarter]) / len(dff_a["pts_adv_1q"]) * 100:.2f}% of times in the last {population} matches'
+    prob_score_1q_A = freq_score_1q_A * freq_got_scored_1q_B
+    prob_score_1q_B = freq_score_1q_B * freq_got_scored_1q_A
+    prob_score_1t_A = freq_score_1t_A * freq_got_scored_1t_B
+    prob_score_1t_B = freq_score_1t_B * freq_got_scored_1t_A
+    prob_score_ft_A = freq_score_ft_A * freq_got_scored_ft_ B
+    prob_score_ft_B = freq_score_ft_B * freq_got_scored_ft_A
 
-    #Graphs of points per quarter of team B
-    first_quarter_team_B = px.scatter(dff_b, x="date", y="pts_1q", title=f'Pontos de {team_b} no primeiro quarto')
-    first_quarter_team_B.add_trace(go.Line(x=dff_b['date'], y=(len(dff_b['pts_1q']) * [pts_quarter]), name=f'{pts_quarter}'))
-    first_quarter_team_B.update_layout(template=graph_theme,title_x=0.5,font=font_theme)
-    first_quarter_resume_B = f'{team_b} scored {pts_quarter} points \
-                {len(dff_b[dff_b["pts_1q"] > pts_quarter]) / len(dff_b["pts_1q"]) * 100:.2f}% of times in the last {population} matches\n' \
-                             f'{team_b} got scored by {pts_quarter} points \
-                {len(dff_b[dff_b["pts_adv_1q"] > pts_quarter]) / len(dff_b["pts_adv_1q"]) * 100:.2f}% of times in the last {population} matches'
+    first_quarter_resume_A = f'{team_a} scored {pts_quarter} points {freq_score_1q_A * 100:.2f}% of times in the last {pop_a} matches; ' \
+                             f'{team_a} got scored by {pts_quarter} points{freq_got_scored_1q_A * 100:.2f}% of times in the last {pop_a} matches; ' \
+                             f'There is a {prob_score_1q_A*100:.2f}% chance of {team_a} makes {pts_quarter} points in First Quarter.'
 
-    #Graphs of points per half time of team A
-    first_time_team_A = px.scatter(dff_a, x="date", y="pts_1t", title=f'Pontos de {team_a} no primeiro tempo')
-    first_time_team_A.add_trace(go.Line(x=dff_a['date'], y=(len(dff_a['pts_1t']) * [pts_time]), name=f'{pts_time}'))
-    first_time_team_A.update_layout(template=graph_theme,title_x=0.5,font=font_theme)
-    first_time_resume_A = f'{team_a} scored {pts_time} points \
-                {len(dff_a[dff_a["pts_1t"] > pts_time]) / len(dff_a["pts_1t"]) * 100:.2f}% of times in the last {population} matches\n' \
-                             f'{team_a} got scored by {pts_time} points \
-                {len(dff_a[dff_a["pts_adv_1t"] > pts_time]) / len(dff_a["pts_adv_1t"]) * 100:.2f}% of times in the last {population} matches'
+    first_quarter_resume_B = f'{team_b} scored {pts_quarter} points { freq_score_1q_B * 100:.2f}% of times in the last {pop_b} matches; ' \
+                             f'{team_b} got scored by {pts_quarter} points {freq_got_scored_1q_B * 100:.2f}% of times in the last {pop_b} matches; \'' \
+                             f'There is a {prob_score_1q_B*100:.2f}% chance of {team_b} makes {pts_quarter} points in First Quarter.'
 
-    # Graphs of points per half time of team B
-    first_time_team_B = px.scatter(dff_b, x="date", y="pts_1t", title=f'Pontos de {team_b} no primeiro tempo')
-    first_time_team_B.add_trace(go.Line(x=dff_b['date'], y=(len(dff_b['pts_1t']) * [pts_time]), name=f'{pts_time}'))
-    first_time_team_B.update_layout(template=graph_theme,title_x=0.5,font=font_theme)
-    first_time_resume_B = f'{team_b} scored {pts_time} points \
-                {len(dff_b[dff_b["pts_1t"] > pts_time]) / len(dff_b["pts_1t"]) * 100:.2f}% of times in the last {population} matches\n' \
-                             f'\n{team_b} got scored by {pts_time} points \
-                {len(dff_b[dff_b["pts_adv_1t"] > pts_time]) / len(dff_b["pts_1t"]) * 100:.2f}% of times in the last {population} matches'
+    first_time_resume_A = f'{team_a} scored {pts_time} points {freq_score_1t_A * 100:.2f}% of times in the last {pop_a} matches;' \
+                          f'{team_a} got scored by {pts_time} points {freq_got_scored_1t_A * 100:.2f}% of times in the last {pop_a} matches; \'' \
+                          f'There is a {prob_score_1t_A*100:.2f}% chance of {team_a} makes {pts_time} points in First Half.'
 
-    # Graphs of total points of team A
-    all_team_A = px.scatter(dff_a, x="date", y="pts_total", title=f'Pontos de {team_a} no jogo')
-    all_team_A.add_trace(go.Line(x=dff_a['date'], y=(len(dff_a['pts_total']) * [pts_game]), name=f'{pts_game}'))
-    all_team_A.update_layout(template=graph_theme,title_x=0.5,font=font_theme)
-    full_time_resume_A = f'{team_a} scored {pts_game} points \
-                {len(dff_a[dff_a["pts_total"] > pts_game]) / len(dff_a["pts_total"]) * 100:.2f}% of times in the last {population} matches\n' \
-                             f'\n{team_a} got scored by {pts_game} points \
-                {len(dff_a[dff_a["pts_adv_total"] > pts_game]) / len(dff_a["pts_adv_total"]) * 100:.2f}% of times in the last {population} matches'
+    first_time_resume_B = f'{team_b} scored {pts_time} points {freq_score_1t_B * 100:.2f}% of times in the last {pop_b} matches; ' \
+                          f'{team_b} got scored by {pts_time} points {freq_got_scored_1t_B * 100:.2f}% of times in the last {pop_b} matches; \'' \
+                          f'There is a {prob_score_1t_B*100:.2f}% chance of {team_b} makes {pts_time} points in First Half.'
 
-    # Graphs of total points of team A
-    all_team_B = px.scatter(dff_b, x="date", y="pts_total", title=f'Pontos de {team_b} no jogo')
-    all_team_B.add_trace(go.Line(x=dff_b['date'], y=(len(dff_b['pts_total']) * [pts_game]), name=f'{pts_game}'))
-    all_team_B.update_layout(template=graph_theme, title_x=0.5, font=font_theme)
-    full_time_resume_B = f'{team_b} scored {pts_game} points \
-                    {len(dff_b[dff_b["pts_total"] > pts_game]) / len(dff_b["pts_total"]) * 100:.2f}% of times in the last {population} matches\n' \
-                         f'\n{team_b} got scored by {pts_game} points \
-                    {len(dff_b[dff_b["pts_adv_total"] > pts_game]) / len(dff_b["pts_adv_total"]) * 100:.2f}% of times in the last {population} matches'
+    full_time_resume_A = f'{team_a} scored {pts_game} points {freq_score_ft_A * 100:.2f}% of times in the last {pop_a} matches; ' \
+                         f'\n{team_a} got scored by {pts_game} points{freq_got_scored_ft_A * 100:.2f}% of times in the last {pop_a} matches; \'' \
+                         f'There is a {prob_score_ft_A*100:.2f}% chance of {team_a} makes {pts_game} points in Full Time'
 
-    # Graphs of total points of team A
-    all_both_teams_team_A = px.scatter(dff_a, x="date", y="total_both_teams", title=f'Pontos totais de {team_a} no jogo')
-    all_both_teams_team_A.add_trace(go.Line(x=dff_a['date'], y=(len(dff_a['pts_total']) * [pts_game_sum]), name=f'{pts_game_sum}'))
-    all_both_teams_team_A.update_layout(template=graph_theme,title_x=0.5,font=font_theme)
+    full_time_resume_B = f'{team_b} scored {pts_game} points {freq_score_ft_B * 100:.2f}% of times in the last {pop_b} matches; \'' \
+                         f'{team_b} got scored by {pts_game} points {freq_got_scored_ft_B * 100:.2f}% of times in the last {pop_b} matches; \'' \
+                         f'There is a {prob_score_ft_B*100:.2f}% chance of {team_b} makes {pts_game} points in Full Time'
+
     total_both_resume_A = f'{team_a} got {pts_game_sum} points in sum of score (Own + Adv) in\
-                    {len(dff_a[dff_a["total_both_teams"] > pts_game_sum]) / len(dff_a["total_both_teams"]) * 100:.2f}\
-                    % of times in the last {population} matches'
-
-    # Graphs of total points of team B
-    all_both_teams_team_B = px.scatter(dff_b, x="date", y="total_both_teams", title=f'Pontos de {team_b} no jogo')
-    all_both_teams_team_B.add_trace(go.Line(x=dff_b['date'], y=(len(dff_b['pts_total']) * [pts_game_sum]), name=f'{pts_game_sum}'))
-    all_both_teams_team_B.update_layout(template=graph_theme, title_x=0.5, font=font_theme)
+                            {len(dff_a[dff_a["total_both_teams"] > pts_game_sum]) / len(dff_a["total_both_teams"]) * 100:.2f}\
+                            % of times in the last {population} matches'
     total_both_resume_B = f'{team_b} got {pts_game_sum} points in sum of score (Own + Adv) in\
                         {len(dff_b[dff_b["total_both_teams"] > pts_game_sum]) / len(dff_b["total_both_teams"]) * 100:.2f}\
                         % of times in the last {population} matches'
 
+    #Graphs of points per quarter of team A
+    first_quarter_team_A = px.line(dff_a, x ='date', y=(len(dff_a['pts_1q']) * [pts_quarter]), title=f'Points of {team_a} at First Quarter')
+    first_quarter_team_A.add_trace(go.Line(x=dff_a['date'], y=dff_a['pts_1q'], name=f'{team_a}', mode='markers', marker_color='green'))
+    first_quarter_team_A.update_layout(template=graph_theme,title_x=0.5,font=font_theme,
+                                       xaxis={'visible': False, 'showticklabels': False}, yaxis_title = '')
+
+    #Graphs of points per quarter of team B
+    first_quarter_team_B = px.line(dff_b, x='date', y=(len(dff_b['pts_1q']) * [pts_quarter]), title=f'Points of {team_b} at First Quarter')
+    first_quarter_team_B.add_trace(
+        go.Line(x=dff_b['date'], y=dff_b['pts_1q'], name=f'{team_b}', mode='markers', marker_color='green'))
+    first_quarter_team_B.update_layout(template=graph_theme, title_x=0.5, font=font_theme,
+                                       xaxis={'visible': False, 'showticklabels': False}, yaxis_title = '')
+
+    #Graphs of points per half time of team A
+    first_time_team_A = px.line(dff_a, x='date', y=(len(dff_a['pts_1t']) * [pts_time]), title=f'Points of {team_a} at First Half')
+    first_time_team_A.add_trace(
+        go.Line(x=dff_a['date'], y=dff_a['pts_1t'], name=f'{team_a}', mode='markers', marker_color='green'))
+    first_time_team_A.update_layout(template=graph_theme, title_x=0.5, font=font_theme,
+                                       xaxis={'visible': False, 'showticklabels': False}, yaxis_title = '')
+
+    # Graphs of points per half time of team B
+    first_time_team_B = px.line(dff_b, x='date', y=(len(dff_b['pts_1t']) * [pts_time]), title=f'Points of {team_b} at First Half')
+    first_time_team_B.add_trace(
+        go.Line(x=dff_b['date'], y=dff_b['pts_1t'], name=f'{team_b}', mode='markers', marker_color='green'))
+    first_time_team_B.update_layout(template=graph_theme, title_x=0.5, font=font_theme,
+                                    xaxis={'visible': False, 'showticklabels': False}, yaxis_title = '')
+    # Graphs of total points of team A
+    all_team_A = px.line(dff_a, x='date', y=(len(dff_a['pts_total']) * [pts_game]), title=f'Points of {team_a} in the game')
+    all_team_A.add_trace(
+        go.Line(x=dff_a['date'], y=dff_a['pts_total'], name=f'{team_a}', mode='markers', marker_color='green'))
+    all_team_A.update_layout(template=graph_theme, title_x=0.5, font=font_theme,
+                                    xaxis={'visible': False, 'showticklabels': False}, yaxis_title = '')
+
+    # Graphs of total points of team A
+    all_team_B = px.line(dff_b, x='date', y=(len(dff_b['pts_total']) * [pts_game]), title=f'Points of {team_b} in the game')
+    all_team_B.add_trace(
+        go.Line(x=dff_b['date'], y=dff_b['pts_total'], name=f'{team_b}', mode='markers', marker_color='green'))
+    all_team_B.update_layout(template=graph_theme, title_x=0.5, font=font_theme,
+                             xaxis={'visible': False, 'showticklabels': False}, yaxis_title = '')
+
+    # Graphs of total points of team A
+    all_both_teams_team_A = px.scatter(dff_a, x="date", y="total_both_teams", title=f'Total points of {team_a} in the game')
+    all_both_teams_team_A.add_trace(go.Line(x=dff_a['date'], y=(len(dff_a['pts_total']) * [pts_game_sum]), name=f'{pts_game_sum}'))
+    all_both_teams_team_A.update_layout(template=graph_theme,title_x=0.5,font=font_theme, xaxis_title='', yaxis_title = '')
+
+    # Graphs of total points of team B
+    all_both_teams_team_B = px.scatter(dff_b, x="date", y="total_both_teams", title=f'Total points of {team_a} in the game')
+    all_both_teams_team_B.add_trace(go.Line(x=dff_b['date'], y=(len(dff_b['pts_total']) * [pts_game_sum]), name=f'{pts_game_sum}'))
+    all_both_teams_team_B.update_layout(template=graph_theme, title_x=0.5, font=font_theme, xaxis_title='', yaxis_title='')
+
     # Adversary marks
     if(cl_adversary != []):
         first_quarter_team_A.add_trace(
-            go.Line(x=dff_a['date'], y=dff_a['pts_adv_1q'], name=f'Adversário', mode='markers', marker_color='red'))
+            go.Line(x=dff_a['date'], y=dff_a['pts_adv_1q'], name=f'adv', mode='markers', marker_color='red'))
         first_quarter_team_B.add_trace(
-            go.Line(x=dff_b['date'], y=dff_b['pts_adv_1q'], name=f'Adversário', mode='markers', marker_color='red'))
+            go.Line(x=dff_b['date'], y=dff_b['pts_adv_1q'], name=f'adv', mode='markers', marker_color='red'))
         first_time_team_A.add_trace(
-            go.Line(x=dff_a['date'], y=dff_a['pts_adv_1t'], name=f'Adversário', mode='markers', marker_color='red'))
+            go.Line(x=dff_a['date'], y=dff_a['pts_adv_1t'], name=f'adv', mode='markers', marker_color='red'))
         first_time_team_B.add_trace(
-            go.Line(x=dff_b['date'], y=dff_b['pts_adv_1t'], name=f'Adversário', mode='markers', marker_color='red'))
+            go.Line(x=dff_b['date'], y=dff_b['pts_adv_1t'], name=f'adv', mode='markers', marker_color='red'))
         all_team_A.add_trace(
-            go.Line(x=dff_a['date'], y=dff_a['pts_adv_total'], name=f'Adversário', mode='markers', marker_color='red'))
+            go.Line(x=dff_a['date'], y=dff_a['pts_adv_total'], name=f'adv', mode='markers', marker_color='red'))
         all_team_B.add_trace(
-            go.Line(x=dff_a['date'], y=dff_a['pts_adv_total'], name=f'Adversário', mode='markers', marker_color='red'))
+            go.Line(x=dff_a['date'], y=dff_a['pts_adv_total'], name=f'adv', mode='markers', marker_color='red'))
 
     global button_click
     if(n_clicks is None):

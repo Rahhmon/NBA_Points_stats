@@ -344,7 +344,7 @@ def update_csv_matches():
     print(f"Total de partidas: {(len(links))}")
 
     #Read the csv file with the content already scraped
-    old_df = pd.read_csv('C:/Users/User/Desktop/dash_points_nba/data.csv')
+    old_df = pd.read_csv('data.csv')
     #calculate the number of matches already downloaded
     n_matches = int(len(old_df['team']) / 2)
 
